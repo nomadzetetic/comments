@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Comments.Data.Migrations
 {
     [DbContext(typeof(CommentsDbContext))]
-    [Migration("20200614153417_Initial")]
+    [Migration("20200614160131_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,7 +46,7 @@ namespace Comments.Data.Migrations
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset?>("Updated")
+                    b.Property<DateTimeOffset>("Updated")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -106,7 +106,7 @@ namespace Comments.Data.Migrations
                         .HasColumnType("character varying(500)")
                         .HasMaxLength(500);
 
-                    b.Property<DateTimeOffset?>("Updated")
+                    b.Property<DateTimeOffset>("Updated")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");

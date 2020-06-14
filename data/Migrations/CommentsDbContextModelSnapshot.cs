@@ -44,7 +44,7 @@ namespace Comments.Data.Migrations
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset?>("Updated")
+                    b.Property<DateTimeOffset>("Updated")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -104,7 +104,7 @@ namespace Comments.Data.Migrations
                         .HasColumnType("character varying(500)")
                         .HasMaxLength(500);
 
-                    b.Property<DateTimeOffset?>("Updated")
+                    b.Property<DateTimeOffset>("Updated")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");

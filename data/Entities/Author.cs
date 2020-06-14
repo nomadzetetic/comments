@@ -11,6 +11,6 @@ namespace Comments.Data.Entities
     public string Name { get; set; }
     public string AvatarUrl { get; set; }
     public DateTimeOffset Created { get; set; }
-    public DateTimeOffset? Updated { get; set; }
+    public DateTimeOffset Updated { get; set; }
   }
 }

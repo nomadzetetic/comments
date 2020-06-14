@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Comments.App.Extensions;
 using Comments.App.Types;
@@ -39,14 +40,15 @@ namespace Comments.App
       services.AddScoped<IProviderService, ProviderService>();
       services.AddDbContext<CommentsDbContext>(options =>
       {
-        options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"),
-          builder =>
-          {
-            builder.MigrationsAssembly("Comments.Data");
-          });
+        var databaseConnectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION") ??
+                                       _configuration.GetConnectionString("DefaultConnection");
+
+        options.UseNpgsql(databaseConnectionString,
+          builder => { builder.MigrationsAssembly("Comments.Data"); });
       });
 
-      var symmetricSecurityKeyValue = Encoding.UTF8.GetBytes(_configuration["JwtSecret"]);
+      var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? _configuration["JwtSecret"];
+      var symmetricSecurityKeyValue = Encoding.UTF8.GetBytes(jwtSecret);
       services.AddAuthentication(x =>
         {
           x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

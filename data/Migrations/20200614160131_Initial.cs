@@ -34,7 +34,7 @@ namespace Comments.Data.Migrations
                     Name = table.Column<string>(maxLength: 50, nullable: false),
                     AvatarUrl = table.Column<string>(maxLength: 1000, nullable: true),
                     Created = table.Column<DateTimeOffset>(nullable: false),
-                    Updated = table.Column<DateTimeOffset>(nullable: true)
+                    Updated = table.Column<DateTimeOffset>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -62,7 +62,7 @@ namespace Comments.Data.Migrations
                     LikesAmount = table.Column<int>(nullable: false, defaultValue: 0),
                     DislikesAmount = table.Column<int>(nullable: false, defaultValue: 0),
                     Created = table.Column<DateTimeOffset>(nullable: false),
-                    Updated = table.Column<DateTimeOffset>(nullable: true)
+                    Updated = table.Column<DateTimeOffset>(nullable: false)
                 },
                 constraints: table =>
                 {
