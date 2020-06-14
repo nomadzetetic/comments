@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Comments.Services.ProviderService.Validators
+namespace Comments.Services.TenantService.Validators
 {
-  public class ProviderNameValidator : AbstractValidator<ProviderNameValidator.FluentValidatableString>
+  public class TenantNameValidator : AbstractValidator<TenantNameValidator.FluentValidatableString>
   {
     public class FluentValidatableString
     {
@@ -14,7 +14,7 @@ namespace Comments.Services.ProviderService.Validators
       }
     }
     
-    private ProviderNameValidator()
+    private TenantNameValidator()
     {
       RuleFor(x => x.Name)
         .NotEmpty()
@@ -26,7 +26,7 @@ namespace Comments.Services.ProviderService.Validators
 
     public static async Task ValidateAndThrowAsync(string name)
     {
-      var validator = new ProviderNameValidator();
+      var validator = new TenantNameValidator();
       var validatableString = new FluentValidatableString(name);
       await validator.ValidateAndThrowAsync(validatableString);
     }

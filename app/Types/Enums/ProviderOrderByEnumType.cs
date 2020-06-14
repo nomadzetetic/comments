@@ -1,4 +1,4 @@
-using Comments.Services.ProviderService.Enums;
+using Comments.Services.TenantService.Enums;
 using HotChocolate.Types;
 
 namespace Comments.App.Types.Enums

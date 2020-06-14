@@ -1,16 +1,15 @@
 using System;
+using System.Collections.Generic;
 
 namespace Comments.Data.Entities
 {
-  public class Author
+  public class Tenant
   {
     public Guid Id { get; set; }
-    public bool Banned { get; set; }
-    public Guid ProviderId { get; set; }
-    public Provider Provider { get; set; }
     public string Name { get; set; }
-    public string AvatarUrl { get; set; }
+    public bool Enabled { get; set; }
     public DateTimeOffset Created { get; set; }
     public DateTimeOffset Updated { get; set; }
+    public List<string> Tokens { get; set; }
   }
 }

@@ -3,9 +3,9 @@ using HotChocolate.Types;
 
 namespace Comments.App.Types
 {
-  public class ProviderType : ObjectType<Provider>
+  public class ProviderType : ObjectType<Tenant>
   {
-    protected override void Configure(IObjectTypeDescriptor<Provider> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<Tenant> descriptor)
     {
       descriptor
         .Field(x => x.Id)

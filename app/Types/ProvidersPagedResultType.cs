@@ -4,9 +4,9 @@ using HotChocolate.Types;
 
 namespace Comments.App.Types
 {
-  public class ProvidersPagedResultType : ObjectType<GenericPagedResult<Provider>>
+  public class ProvidersPagedResultType : ObjectType<GenericPagedResult<Tenant>>
   {
-    protected override void Configure(IObjectTypeDescriptor<GenericPagedResult<Provider>> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<GenericPagedResult<Tenant>> descriptor)
     {
       descriptor
         .Field(x => x.Page)

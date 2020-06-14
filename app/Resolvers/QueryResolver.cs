@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Comments.Data.Entities;
 using Comments.Security.Constants;
 using Comments.Services.Models;
-using Comments.Services.ProviderService;
-using Comments.Services.ProviderService.Models;
+using Comments.Services.TenantService;
+using Comments.Services.TenantService.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -17,26 +17,31 @@ namespace Comments.App.Resolvers
   public class QueryResolver
   {
     private readonly IConfiguration _configuration;
-    private readonly IProviderService _providerService;
+    private readonly ITenantService _tenantService;
     private readonly IHttpContextAccessor _httpContextAccessor;
     
     public QueryResolver(
       IConfiguration configuration,
-      IProviderService providerService,
+      ITenantService tenantService,
       IHttpContextAccessor httpContextAccessor)
     {
       _configuration = configuration;
-      _providerService = providerService;
+      _tenantService = tenantService;
       _httpContextAccessor = httpContextAccessor;
     }
 
-    public Task<Provider> GetProvider(Guid providerId) => 
-      _providerService.GetProvider(providerId);
+    public int Comment()
+    {
+      return 43;
+    }
+    
+    public Task<Tenant> GetTenantById(Guid tenantId) => 
+      _tenantService.GetById(tenantId);
 
-    public Task<GenericPagedResult<Provider>> GetProviders(GetProvidersInput input) => 
-      _providerService.GetProviders(input);
+    public Task<GenericPagedResult<Tenant>> GetTenantsList(GetListInput input) => 
+      _tenantService.GetList(input);
 
-    public string GetJwtToken(bool commentsAdministrator, string authorName, string authorId, string authorAvatarUrl)
+    public string GetJwtToken(bool commentsAdministrator, string commentatorName, string commentatorId)
     {
       var tokenHandler = new JwtSecurityTokenHandler();
       var key = Encoding.UTF8.GetBytes(_configuration["JwtSecret"]);
@@ -47,19 +52,14 @@ namespace Comments.App.Resolvers
         claimsIdentity.AddClaim(new Claim(ClaimTypeName.CommentsAdministrator, "true"));
       }
 
-      if (!string.IsNullOrWhiteSpace(authorName))
+      if (!string.IsNullOrWhiteSpace(commentatorName))
       {
-        claimsIdentity.AddClaim(new Claim(ClaimTypeName.AuthorName, authorName.Trim()));
+        claimsIdentity.AddClaim(new Claim(ClaimTypeName.CommentatorName, commentatorName.Trim()));
       }
 
-      if (!string.IsNullOrWhiteSpace(authorId))
+      if (!string.IsNullOrWhiteSpace(commentatorId))
       {
-        claimsIdentity.AddClaim(new Claim(ClaimTypeName.AuthorId, authorId.Trim()));
-      }
-
-      if (!string.IsNullOrWhiteSpace(authorAvatarUrl))
-      {
-        claimsIdentity.AddClaim(new Claim(ClaimTypeName.AuthorAvatarUrl, authorAvatarUrl.Trim()));
+        claimsIdentity.AddClaim(new Claim(ClaimTypeName.CommentatorId, commentatorId.Trim()));
       }
 
       var tokenDescriptor = new SecurityTokenDescriptor

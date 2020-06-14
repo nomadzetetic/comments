@@ -9,7 +9,7 @@ namespace Comments.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Providers",
+                name: "Tenants",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -21,28 +21,48 @@ namespace Comments.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Providers", x => x.Id);
+                    table.PrimaryKey("PK_Tenants", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Authors",
+                name: "Commentators",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
                     Banned = table.Column<bool>(nullable: false),
-                    ProviderId = table.Column<Guid>(nullable: false),
+                    TenantId = table.Column<Guid>(nullable: false),
                     Name = table.Column<string>(maxLength: 50, nullable: false),
-                    AvatarUrl = table.Column<string>(maxLength: 1000, nullable: true),
                     Created = table.Column<DateTimeOffset>(nullable: false),
                     Updated = table.Column<DateTimeOffset>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Authors", x => x.Id);
+                    table.PrimaryKey("PK_Commentators", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Authors_Providers_ProviderId",
-                        column: x => x.ProviderId,
-                        principalTable: "Providers",
+                        name: "FK_Commentators_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Resources",
+                columns: table => new
+                {
+                    ResourceId = table.Column<string>(maxLength: 1000, nullable: false),
+                    TenantId = table.Column<Guid>(nullable: false),
+                    Replies = table.Column<int>(nullable: false, defaultValue: 0),
+                    Likes = table.Column<int>(nullable: false, defaultValue: 0),
+                    Dislikes = table.Column<int>(nullable: false, defaultValue: 0)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Resources", x => x.ResourceId);
+                    table.ForeignKey(
+                        name: "FK_Resources_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -53,14 +73,13 @@ namespace Comments.Data.Migrations
                 {
                     Id = table.Column<Guid>(nullable: false),
                     ParentId = table.Column<Guid>(nullable: true),
-                    AuthorId = table.Column<Guid>(nullable: false),
-                    ProviderId = table.Column<Guid>(nullable: false),
-                    ResourceKey = table.Column<string>(maxLength: 500, nullable: false),
+                    CommentatorId = table.Column<Guid>(nullable: false),
+                    TenantId = table.Column<Guid>(nullable: false),
+                    ResourceId = table.Column<string>(nullable: false),
                     Message = table.Column<string>(type: "text", nullable: false),
-                    Deleted = table.Column<bool>(nullable: false, defaultValue: false),
-                    RepliesAmount = table.Column<int>(nullable: false, defaultValue: 0),
-                    LikesAmount = table.Column<int>(nullable: false, defaultValue: 0),
-                    DislikesAmount = table.Column<int>(nullable: false, defaultValue: 0),
+                    Replies = table.Column<int>(nullable: false, defaultValue: 0),
+                    Likes = table.Column<int>(nullable: false, defaultValue: 0),
+                    Dislikes = table.Column<int>(nullable: false, defaultValue: 0),
                     Created = table.Column<DateTimeOffset>(nullable: false),
                     Updated = table.Column<DateTimeOffset>(nullable: false)
                 },
@@ -68,9 +87,9 @@ namespace Comments.Data.Migrations
                 {
                     table.PrimaryKey("PK_Comments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comments_Authors_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Authors",
+                        name: "FK_Comments_Commentators_CommentatorId",
+                        column: x => x.CommentatorId,
+                        principalTable: "Commentators",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -78,11 +97,17 @@ namespace Comments.Data.Migrations
                         column: x => x.ParentId,
                         principalTable: "Comments",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Comments_Providers_ProviderId",
-                        column: x => x.ProviderId,
-                        principalTable: "Providers",
+                        name: "FK_Comments_Resources_ResourceId",
+                        column: x => x.ResourceId,
+                        principalTable: "Resources",
+                        principalColumn: "ResourceId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comments_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -92,42 +117,42 @@ namespace Comments.Data.Migrations
                 columns: table => new
                 {
                     CommentId = table.Column<Guid>(nullable: false),
-                    AuthorId = table.Column<Guid>(nullable: false),
+                    CommentatorId = table.Column<Guid>(nullable: false),
                     Value = table.Column<bool>(nullable: false),
                     Created = table.Column<DateTimeOffset>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Likes", x => new { x.CommentId, x.AuthorId });
-                    table.ForeignKey(
-                        name: "FK_Likes_Authors_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Authors",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_Likes", x => new { x.CommentId, x.CommentatorId });
                     table.ForeignKey(
                         name: "FK_Likes_Comments_CommentId",
                         column: x => x.CommentId,
                         principalTable: "Comments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Likes_Commentators_CommentatorId",
+                        column: x => x.CommentatorId,
+                        principalTable: "Commentators",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Authors_ProviderId",
-                table: "Authors",
-                column: "ProviderId");
+                name: "IX_Commentators_TenantId",
+                table: "Commentators",
+                column: "TenantId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Authors_Name_ProviderId",
-                table: "Authors",
-                columns: new[] { "Name", "ProviderId" },
+                name: "IX_Commentators_Name_TenantId",
+                table: "Commentators",
+                columns: new[] { "Name", "TenantId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_AuthorId",
+                name: "IX_Comments_CommentatorId",
                 table: "Comments",
-                column: "AuthorId");
+                column: "CommentatorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_ParentId",
@@ -135,18 +160,34 @@ namespace Comments.Data.Migrations
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_ProviderId",
+                name: "IX_Comments_ResourceId",
                 table: "Comments",
-                column: "ProviderId");
+                column: "ResourceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Likes_AuthorId",
+                name: "IX_Comments_TenantId",
+                table: "Comments",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Likes_CommentatorId",
                 table: "Likes",
-                column: "AuthorId");
+                column: "CommentatorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Providers_Name",
-                table: "Providers",
+                name: "IX_Resources_TenantId",
+                table: "Resources",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Resources_ResourceId_TenantId",
+                table: "Resources",
+                columns: new[] { "ResourceId", "TenantId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tenants_Name",
+                table: "Tenants",
                 column: "Name",
                 unique: true);
         }
@@ -160,10 +201,13 @@ namespace Comments.Data.Migrations
                 name: "Comments");
 
             migrationBuilder.DropTable(
-                name: "Authors");
+                name: "Commentators");
 
             migrationBuilder.DropTable(
-                name: "Providers");
+                name: "Resources");
+
+            migrationBuilder.DropTable(
+                name: "Tenants");
         }
     }
 }

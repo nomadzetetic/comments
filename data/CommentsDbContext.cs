@@ -10,74 +10,96 @@ namespace Comments.Data
     {
     }
     
-    public DbSet<Author> Authors { get; set; }
+    public DbSet<Commentator> Commentators { get; set; }
+    public DbSet<Resource> Resources { get; set; }
     public DbSet<Comment> Comments { get; set; }
-    public DbSet<Like> Likes { get; set; }
-    public DbSet<Provider> Providers { get; set; }
+    public DbSet<Reaction> Likes { get; set; }
+    public DbSet<Tenant> Tenants { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
 
-      modelBuilder.Entity<Provider>(provider =>
+      modelBuilder.Entity<Resource>(entity =>
       {
-        provider.HasKey(x => x.Id);
-        provider.Property(x => x.Id).ValueGeneratedOnAdd();
-        provider.HasIndex(x => x.Name).IsUnique();
-        provider.Property(x => x.Name).IsRequired().HasMaxLength(50);
-        provider.Property(x => x.Tokens).HasColumnType("jsonb").IsRequired();
-      });
-
-      modelBuilder.Entity<Author>(author =>
-      {
-        author.HasKey(x => x.Id);
-        author.Property(x => x.Id).ValueGeneratedOnAdd();
-        author.Property(x => x.Name).IsRequired().HasMaxLength(50);
-        author.HasIndex(x => new { x.Name, x.ProviderId }).IsUnique();
-        author.Property(x => x.AvatarUrl).IsRequired(false).HasMaxLength(1000);
-
-        author.HasOne(x => x.Provider)
+        entity.HasKey(x => x.ResourceId);
+        entity.Property(x => x.ResourceId).HasMaxLength(1000).IsRequired();
+        entity.Property(x => x.Replies).HasDefaultValue(0);
+        entity.Property(x => x.Likes).HasDefaultValue(0);
+        entity.Property(x => x.Dislikes).HasDefaultValue(0);
+        entity.HasOne(x => x.Tenant)
           .WithMany()
-          .HasForeignKey(x => x.ProviderId);
+          .HasForeignKey(x => x.TenantId)
+          .IsRequired();
+        entity.HasIndex(x => new { x.ResourceId, x.TenantId }).IsUnique();
+      });
+      
+      modelBuilder.Entity<Tenant>(entity =>
+      {
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        entity.HasIndex(x => x.Name).IsUnique();
+        entity.Property(x => x.Name).IsRequired().HasMaxLength(50);
+        entity.Property(x => x.Tokens).HasColumnType("jsonb").IsRequired();
       });
 
-      modelBuilder.Entity<Comment>(comment =>
+      modelBuilder.Entity<Commentator>(entity =>
       {
-        comment.HasKey(x => x.Id);
-        comment.Property(x => x.Id).ValueGeneratedOnAdd();
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        entity.Property(x => x.Name).IsRequired().HasMaxLength(50);
+        entity.HasIndex(x => new { x.Name, x.TenantId }).IsUnique();
+        entity.Ignore(x => x.AvatarUrl);
 
-        comment
+        entity.HasOne(x => x.Tenant)
+          .WithMany()
+          .HasForeignKey(x => x.TenantId)
+          .IsRequired();
+      });
+
+      modelBuilder.Entity<Comment>(entity =>
+      {
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.Id).ValueGeneratedOnAdd();
+
+        entity
           .HasMany(x => x.SubComments)
           .WithOne(x => x.Parent)
-          .HasForeignKey(x => x.ParentId);
+          .HasForeignKey(x => x.ParentId)
+          .OnDelete(DeleteBehavior.Cascade);
 
-        comment
-          .HasOne(x => x.Author)
+        entity
+          .HasOne(x => x.Commentator)
           .WithMany()
-          .HasForeignKey(x => x.AuthorId);
+          .HasForeignKey(x => x.CommentatorId);
 
-        comment
-          .HasOne(x => x.Provider)
+        entity
+          .HasOne(x => x.Tenant)
           .WithMany()
-          .HasForeignKey(x => x.ProviderId);
+          .HasForeignKey(x => x.TenantId);
 
-        comment.Property(x => x.ResourceKey).HasMaxLength(500).IsRequired();
-        comment.Property(x => x.Message).IsRequired().HasColumnType("text");
-        comment.Property(x => x.Deleted).HasDefaultValue(false);
-        comment.Property(x => x.RepliesAmount).HasDefaultValue(0);
-        comment.Property(x => x.LikesAmount).HasDefaultValue(0);
-        comment.Property(x => x.DislikesAmount).HasDefaultValue(0);
+        entity
+          .HasOne(x => x.Resource)
+          .WithMany()
+          .HasForeignKey(x => x.ResourceId)
+          .IsRequired()
+          .OnDelete(DeleteBehavior.Cascade);
+
+        entity.Property(x => x.Message).IsRequired().HasColumnType("text");
+        entity.Property(x => x.Replies).HasDefaultValue(0);
+        entity.Property(x => x.Likes).HasDefaultValue(0);
+        entity.Property(x => x.Dislikes).HasDefaultValue(0);
       });
 
-      modelBuilder.Entity<Like>(like =>
+      modelBuilder.Entity<Reaction>(entity =>
       {
-        like.HasKey(x => new {x.CommentId, x.AuthorId});
-        like.Property(x => x.Value).IsRequired();
-        like.HasOne(x => x.Author)
+        entity.HasKey(x => new {x.CommentId, AuthorId = x.CommentatorId});
+        entity.Property(x => x.Value).IsRequired();
+        entity.HasOne(x => x.Commentator)
           .WithMany()
-          .HasForeignKey(x => x.AuthorId);
+          .HasForeignKey(x => x.CommentatorId);
 
-        like.HasOne(x => x.Comment)
+        entity.HasOne(x => x.Comment)
           .WithMany()
           .HasForeignKey(x => x.CommentId);
       });

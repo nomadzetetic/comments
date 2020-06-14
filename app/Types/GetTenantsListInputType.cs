@@ -1,12 +1,12 @@
 using Comments.App.Types.Enums;
-using Comments.Services.ProviderService.Models;
+using Comments.Services.TenantService.Models;
 using HotChocolate.Types;
 
 namespace Comments.App.Types
 {
-  public class GetProvidersInputType : InputObjectType<GetProvidersInput>
+  public class GetTenantsListInputType : InputObjectType<GetListInput>
   {
-    protected override void Configure(IInputObjectTypeDescriptor<GetProvidersInput> descriptor)
+    protected override void Configure(IInputObjectTypeDescriptor<GetListInput> descriptor)
     {
       descriptor
         .Field(x => x.Page)

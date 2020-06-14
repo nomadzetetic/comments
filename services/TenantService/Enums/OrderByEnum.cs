@@ -1,4 +1,4 @@
-namespace Comments.Services.ProviderService.Enums
+namespace Comments.Services.TenantService.Enums
 {
   public enum OrderByEnum
   {

@@ -11,40 +11,40 @@ namespace Comments.App.Types
       descriptor.Name("Mutation");
       
       descriptor
-        .Field(x => x.AddProvider(default))
+        .Field(x => x.CreateTenant(default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
         .Argument("name", x => x.Type<NonNullType<StringType>>())
         .Type<NonNullType<ProviderType>>();
 
       descriptor
-        .Field(x => x.DisableProvider(default))
+        .Field(x => x.DisableTenant(default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
-        .Argument("providerId", x => x.Type<NonNullType<UuidType>>())
+        .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
-        .Field(x => x.EnableProvider(default))
+        .Field(x => x.EnableTenant(default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
-        .Argument("providerId", x => x.Type<NonNullType<UuidType>>())
+        .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
-        .Field(x => x.RenameProvider(default, default))
+        .Field(x => x.RenameTenant(default, default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
-        .Argument("providerId", x => x.Type<NonNullType<UuidType>>())
+        .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Argument("name", x => x.Type<NonNullType<StringType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
-        .Field(x => x.AddProviderToken(default))
+        .Field(x => x.AddTenantToken(default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
-        .Argument("providerId", x => x.Type<NonNullType<UuidType>>())
+        .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
-        .Field(x => x.DeleteProviderToken(default, default))
+        .Field(x => x.DeleteTenantToken(default, default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
-        .Argument("providerId", x => x.Type<NonNullType<UuidType>>())
+        .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Argument("token", x => x.Type<NonNullType<StringType>>())
         .Type<NonNullType<ProviderType>>();
     }

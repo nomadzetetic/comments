@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Comments.Services.ProviderService.Validators
+namespace Comments.Services.TenantService.Validators
 {
-  public class ProviderTokenValidator : AbstractValidator<ProviderTokenValidator.FluentValidatableString>
+  public class TenantTokenValidator : AbstractValidator<TenantTokenValidator.FluentValidatableString>
   {
     public class FluentValidatableString
     {
@@ -14,14 +14,14 @@ namespace Comments.Services.ProviderService.Validators
       }
     }
     
-    private ProviderTokenValidator()
+    private TenantTokenValidator()
     {
       RuleFor(x => x.Token).NotEmpty();
     }
 
     public static async Task ValidateAndThrowAsync(string token)
     {
-      var validator = new ProviderTokenValidator();
+      var validator = new TenantTokenValidator();
       var validatableString = new FluentValidatableString(token);
       await validator.ValidateAndThrowAsync(validatableString);
     }

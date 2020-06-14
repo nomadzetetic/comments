@@ -1,26 +1,26 @@
 using System;
 using System.Threading.Tasks;
 using Comments.Data.Entities;
-using Comments.Services.ProviderService;
+using Comments.Services.TenantService;
 
 namespace Comments.App.Resolvers
 {
   public class MutationResolver
   {
-    private readonly IProviderService _providerService;
+    private readonly ITenantService _tenantService;
 
-    public MutationResolver(IProviderService providerService)
+    public MutationResolver(ITenantService tenantService)
     {
-      _providerService = providerService;
+      _tenantService = tenantService;
     }
 
-    public Task<Provider> AddProvider(string name) => _providerService.AddProvider(name);
-    public Task<Provider> RenameProvider(Guid providerId, string name) => 
-      _providerService.RenameProvider(providerId, name?.Trim());
-    public Task<Provider> EnableProvider(Guid providerId) => _providerService.EnableProvider(providerId);
-    public Task<Provider> DisableProvider(Guid providerId) => _providerService.DisableProvider(providerId);
-    public Task<Provider> AddProviderToken(Guid providerId) => _providerService.AddProviderToken(providerId);
-    public Task<Provider> DeleteProviderToken(Guid providerId, string token) =>
-      _providerService.DeleteProviderToken(providerId, token?.Trim());
+    public Task<Tenant> CreateTenant(string name) => _tenantService.Create(name);
+    public Task<Tenant> RenameTenant(Guid tenantId, string name) => 
+      _tenantService.Rename(tenantId, name?.Trim());
+    public Task<Tenant> EnableTenant(Guid tenantId) => _tenantService.Enable(tenantId);
+    public Task<Tenant> DisableTenant(Guid tenantId) => _tenantService.Disable(tenantId);
+    public Task<Tenant> AddTenantToken(Guid tenantId) => _tenantService.AddToken(tenantId);
+    public Task<Tenant> DeleteTenantToken(Guid tenantId, string token) =>
+      _tenantService.DeleteToken(tenantId, token?.Trim());
   }
 }

@@ -21,7 +21,7 @@ namespace Comments.App.Extensions
         .AddAuthorizeDirectiveType()
         .AddType<SortDirectionEnumType>()
         .AddType<ProviderOrderByEnumType>()
-        .AddType<GetProvidersInputType>()
+        .AddType<GetTenantsListInputType>()
         .AddType<ProvidersPagedResultType>()
         .AddType<ProviderType>()
         .AddQueryType<QueryType>()

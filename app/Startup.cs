@@ -1,13 +1,11 @@
 using System;
 using System.Text;
 using Comments.App.Extensions;
-using Comments.App.Types;
-using Comments.App.Types.Enums;
 using Comments.Data;
 using Comments.Security.CommentsAdministratorPolicy;
+using Comments.Security.CommentsRequestPolicy;
 using Comments.Security.Constants;
-using Comments.Services.ProviderService;
-using HotChocolate;
+using Comments.Services.TenantService;
 using HotChocolate.AspNetCore;
 using HotChocolate.AspNetCore.Playground;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,7 +35,7 @@ namespace Comments.App
     {
       services.AddCors();
       services.AddHttpContextAccessor();
-      services.AddScoped<IProviderService, ProviderService>();
+      services.AddScoped<ITenantService, TenantService>();
       services.AddDbContext<CommentsDbContext>(options =>
       {
         var databaseConnectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION") ??
@@ -71,8 +69,11 @@ namespace Comments.App
       {
         options.AddPolicy(AuthorizationPolicyName.CommentsAdministrator, policy => policy
           .Requirements.Add(new CommentsAdministratorRequirement()));
+        options.AddPolicy(AuthorizationPolicyName.CommentsRequest, policy => policy
+          .Requirements.Add(new CommentsRequestRequirement()));
       });
       services.AddSingleton<IAuthorizationHandler, CommentsAdministratorAuthorizationHandler>();
+      services.AddSingleton<IAuthorizationHandler, CommentsRequestAuthorizationHandler>();
       services.SetupGraphql();
     }
 

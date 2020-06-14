@@ -11,25 +11,30 @@ namespace Comments.App.Types
       descriptor.Name("Query");
       
       descriptor
-        .Field(x => x.GetProviders(default))
+        .Field(x => x.GetTenantsList(default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
-        .Name("providers")
-        .Argument("input", x => x.Type<GetProvidersInputType>())
+        .Name("tenants")
+        .Argument("input", x => x.Type<GetTenantsListInputType>())
         .Type<NonNullType<ProvidersPagedResultType>>();
       
       descriptor
-        .Field(x => x.GetProvider(default))
+        .Field(x => x.GetTenantById(default))
         .Authorize(AuthorizationPolicyName.CommentsAdministrator)
-        .Name("provider")
-        .Argument("providerId", x => x.Type<NonNullType<IdType>>())
+        .Name("tenant")
+        .Argument("tenantId", x => x.Type<NonNullType<IdType>>())
         .Type<NonNullType<ProviderType>>();
 
       descriptor
-        .Field(x => x.GetJwtToken(default, default, default, default))
+        .Field(x => x.Comment())
+        .Authorize(AuthorizationPolicyName.CommentsRequest)
+        .Name("comment")
+        .Type<NonNullType<IntType>>();
+      
+      descriptor
+        .Field(x => x.GetJwtToken(default, default, default))
         .Argument("commentsAdministrator", x => x.Type<BooleanType>())
-        .Argument("authorName", x => x.Type<StringType>())
-        .Argument("authorId", x => x.Type<StringType>())
-        .Argument("authorAvatarUrl", x => x.Type<StringType>())
+        .Argument("commentatorName", x => x.Type<StringType>())
+        .Argument("commentatorId", x => x.Type<StringType>())
         .Type<NonNullType<StringType>>();
     }
   }
