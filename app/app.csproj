@@ -6,4 +6,21 @@
         <RootNamespace>Comments.App</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\data\data.csproj" />
+      <ProjectReference Include="..\security\security.csproj" />
+      <ProjectReference Include="..\services\services.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="HotChocolate" Version="10.4.3" />
+      <PackageReference Include="HotChocolate.AspNetCore" Version="10.4.3" />
+      <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="10.4.3" />
+      <PackageReference Include="HotChocolate.AspNetCore.Playground" Version="10.4.3" />
+      <PackageReference Include="HotChocolate.AspNetCore.Subscriptions" Version="10.4.3" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.4" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
+    </ItemGroup>
+
 </Project>

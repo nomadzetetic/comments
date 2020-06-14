@@ -34,7 +34,7 @@ namespace Comments.Services.ProviderService
       }
       
       var inputSort = input?.Sort ?? SortDirectionEnum.Asc;
-      var inputOrderBy = input?.OrderBy ?? OrderByProviderFieldEnum.Name;
+      var inputOrderBy = input?.OrderBy ?? OrderByEnum.Name;
 
       var limit = inputLimit < 1 ? 1 : inputLimit > 100 ? 100 : inputLimit;
       var skip = (inputPage - 1) * limit;
@@ -46,13 +46,13 @@ namespace Comments.Services.ProviderService
 
       query = inputOrderBy switch
       {
-        OrderByProviderFieldEnum.Name => inputSort == SortDirectionEnum.Asc
+        OrderByEnum.Name => inputSort == SortDirectionEnum.Asc
           ? query.OrderBy(x => x.Name)
           : query.OrderByDescending(x => x.Name),
-        OrderByProviderFieldEnum.Created => inputSort == SortDirectionEnum.Asc
+        OrderByEnum.Created => inputSort == SortDirectionEnum.Asc
           ? query.OrderBy(x => x.Created)
           : query.OrderByDescending(x => x.Created),
-        OrderByProviderFieldEnum.Updated => inputSort == SortDirectionEnum.Asc
+        OrderByEnum.Updated => inputSort == SortDirectionEnum.Asc
           ? query.OrderBy(x => x.Updated)
           : query.OrderByDescending(x => x.Updated),
         _ => query

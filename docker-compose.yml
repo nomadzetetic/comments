@@ -1,0 +1,13 @@
+version: '3.6'
+services:
+  db:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=nomadzetetic
+      - POSTGRES_USER=nomadzetetic
+      - POSTGRES_PASSWORD=nomadzetetic
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres:/var/lib/postgresql/data

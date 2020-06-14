@@ -1,6 +1,6 @@
 namespace Comments.Services.ProviderService.Enums
 {
-  public enum OrderByProviderFieldEnum
+  public enum OrderByEnum
   {
     Created,
     Updated,

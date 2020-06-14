@@ -1,29 +1,110 @@
+using System.Text;
+using Comments.App.Extensions;
+using Comments.App.Types;
+using Comments.App.Types.Enums;
+using Comments.Data;
+using Comments.Security.CommentsAdministratorPolicy;
+using Comments.Security.Constants;
+using Comments.Services.ProviderService;
+using HotChocolate;
+using HotChocolate.AspNetCore;
+using HotChocolate.AspNetCore.Playground;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Comments.App
 {
   public class Startup
   {
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
+    
+    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+    {
+      _environment = environment;
+      _configuration = configuration;
+    }
+    
     public void ConfigureServices(IServiceCollection services)
     {
+      services.AddCors();
+      services.AddHttpContextAccessor();
+      services.AddScoped<IProviderService, ProviderService>();
+      services.AddDbContext<CommentsDbContext>(options =>
+      {
+        options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"),
+          builder =>
+          {
+            builder.MigrationsAssembly("Comments.Data");
+          });
+      });
+
+      var symmetricSecurityKeyValue = Encoding.UTF8.GetBytes(_configuration["JwtSecret"]);
+      services.AddAuthentication(x =>
+        {
+          x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+          x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(x =>
+        {
+          x.RequireHttpsMetadata = !_environment.IsDevelopment();
+          x.SaveToken = true;
+          x.TokenValidationParameters = new TokenValidationParameters
+          {
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            IssuerSigningKey = new SymmetricSecurityKey(symmetricSecurityKeyValue)
+          };
+        });
+      services.AddAuthorization(options =>
+      {
+        options.AddPolicy(AuthorizationPolicyName.CommentsAdministrator, policy => policy
+          .Requirements.Add(new CommentsAdministratorRequirement()));
+      });
+      services.AddSingleton<IAuthorizationHandler, CommentsAdministratorAuthorizationHandler>();
+      services.SetupGraphql();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+      using var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+      using var dbContext = serviceScope.ServiceProvider.GetService<CommentsDbContext>();
+      dbContext.Database.Migrate();
+
+      app.UseWebSockets();
+      
       if (env.IsDevelopment())
       {
         app.UseDeveloperExceptionPage();
+        app.UsePlayground(new PlaygroundOptions
+        {
+          QueryPath = "/graphql",
+          Path = "/graphql",
+          EnableSubscription = true
+        });
       }
 
-      app.UseRouting();
+      app.UseHttpsRedirection();
+      app.UseCors(x => x
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+      );
 
-      app.UseEndpoints(endpoints =>
+      app.UseAuthentication();
+      app.UseGraphQL(new QueryMiddlewareOptions
       {
-        endpoints.MapGet("/", async context => { await context.Response.WriteAsync("Hello World!"); });
+        Path = "/graphql",
+        EnableSubscriptions = true
       });
     }
   }
