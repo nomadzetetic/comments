@@ -170,7 +170,7 @@ namespace Comments.Services.TenantService
       return tenant;
     }
 
-    public async Task<Tenant> GetById(Guid tenantId)
+    public async Task<Tenant> GetByIdAsync(Guid tenantId)
     {
       var tenant = await _commentsDbContext
         .Tenants

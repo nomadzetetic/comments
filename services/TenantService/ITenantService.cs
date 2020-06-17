@@ -14,7 +14,7 @@ namespace Comments.Services.TenantService
     public Task<Tenant> DeleteToken(Guid providerId, string token);
     public Task<Tenant> Disable(Guid providerId);
     public Task<Tenant> Enable(Guid providerId);
-    public Task<Tenant> GetById(Guid providerId);
+    public Task<Tenant> GetByIdAsync(Guid providerId);
     public Task<Tenant> Rename(Guid providerId, string name);
   }
 }

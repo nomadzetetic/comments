@@ -36,7 +36,7 @@ namespace Comments.App.Resolvers
     }
     
     public Task<Tenant> GetTenantById(Guid tenantId) => 
-      _tenantService.GetById(tenantId);
+      _tenantService.GetByIdAsync(tenantId);
 
     public Task<GenericPagedResult<Tenant>> GetTenantsList(GetListInput input) => 
       _tenantService.GetList(input);

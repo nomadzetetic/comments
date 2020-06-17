@@ -5,6 +5,7 @@ using Comments.Data;
 using Comments.Security.CommentsAdministratorPolicy;
 using Comments.Security.CommentsRequestPolicy;
 using Comments.Security.Constants;
+using Comments.Security.TenantHeaderPolicy;
 using Comments.Services.TenantService;
 using HotChocolate.AspNetCore;
 using HotChocolate.AspNetCore.Playground;
@@ -71,9 +72,12 @@ namespace Comments.App
           .Requirements.Add(new CommentsAdministratorRequirement()));
         options.AddPolicy(AuthorizationPolicyName.CommentsRequest, policy => policy
           .Requirements.Add(new CommentsRequestRequirement()));
+        options.AddPolicy(AuthorizationPolicyName.TenantHeader, policy => policy
+          .Requirements.Add(new TenantHeaderRequirement()));
       });
       services.AddSingleton<IAuthorizationHandler, CommentsAdministratorAuthorizationHandler>();
       services.AddSingleton<IAuthorizationHandler, CommentsRequestAuthorizationHandler>();
+      services.AddSingleton<IAuthorizationHandler, TenantHeaderAuthorizationHandler>();
       services.SetupGraphql();
     }
 
