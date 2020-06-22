@@ -45,16 +45,15 @@ namespace Comments.Data
 
       modelBuilder.Entity<Commentator>(entity =>
       {
-        entity.HasKey(x => x.Id);
-        entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        entity.HasKey(x => new { x.Id, x.TenantId });
+        entity.Property(x => x.Id).IsRequired();
         entity.Property(x => x.Name).IsRequired().HasMaxLength(50);
-        entity.HasIndex(x => new { x.Name, x.TenantId }).IsUnique();
-        entity.Ignore(x => x.AvatarUrl);
-
         entity.HasOne(x => x.Tenant)
           .WithMany()
           .HasForeignKey(x => x.TenantId)
           .IsRequired();
+
+        entity.Ignore(x => x.AvatarUrl);
       });
 
       modelBuilder.Entity<Comment>(entity =>

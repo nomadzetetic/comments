@@ -1,5 +1,5 @@
 using Comments.App.Resolvers;
-using Comments.Security.Constants;
+using Comments.Services.Constants;
 using HotChocolate.Types;
 
 namespace Comments.App.Types
@@ -9,33 +9,29 @@ namespace Comments.App.Types
     protected override void Configure(IObjectTypeDescriptor<QueryResolver> descriptor)
     {
       descriptor.Name("Query");
-      
+
       descriptor
         .Field(x => x.GetTenantsList(default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new[] {Roles.CommentsAdministrator})
         .Name("tenants")
         .Argument("input", x => x.Type<GetTenantsListInputType>())
         .Type<NonNullType<ProvidersPagedResultType>>();
-      
+
       descriptor
         .Field(x => x.GetTenantById(default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new[] {Roles.CommentsAdministrator})
         .Name("tenant")
         .Argument("tenantId", x => x.Type<NonNullType<IdType>>())
         .Type<NonNullType<ProviderType>>();
 
-      descriptor
-        .Field(x => x.Comment())
-        .Authorize(AuthorizationPolicyName.CommentsRequest)
-        .Name("comment")
-        .Type<NonNullType<IntType>>();
-      
+#if DEBUG
       descriptor
         .Field(x => x.GetJwtToken(default, default, default))
         .Argument("commentsAdministrator", x => x.Type<BooleanType>())
         .Argument("commentatorName", x => x.Type<StringType>())
         .Argument("commentatorId", x => x.Type<StringType>())
         .Type<NonNullType<StringType>>();
+#endif
     }
   }
 }

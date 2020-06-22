@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Comments.Data;
 using Comments.Data.Entities;
 using Comments.Services.Enums;
-using Comments.Services.Exceptions;
 using Comments.Services.Models;
 using Comments.Services.TenantService.Enums;
+using Comments.Services.TenantService.Exceptions;
 using Comments.Services.TenantService.Models;
 using Comments.Services.TenantService.Validators;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +24,7 @@ namespace Comments.Services.TenantService
       _commentsDbContext = commentsDbContext;
     }
 
-    public async Task<GenericPagedResult<Tenant>> GetList(GetListInput input)
+    public async Task<GenericPagedResult<Tenant>> GetListAsync(GetListInput input)
     {
       var inputPage = input?.Page ?? 1;
       var inputLimit = input?.Limit ?? 10;
@@ -73,7 +73,7 @@ namespace Comments.Services.TenantService
       };
     }
 
-    public async Task<Tenant> Create(string name)
+    public async Task<Tenant> CreateAsync(string name)
     {
       await TenantNameValidator.ValidateAndThrowAsync(name);
 
@@ -94,7 +94,7 @@ namespace Comments.Services.TenantService
       return tenant;
     }
 
-    public async Task<Tenant> AddToken(Guid tenantId)
+    public async Task<Tenant> AddTokenAsync(Guid tenantId)
     {
       var tenant = await _commentsDbContext
         .Tenants
@@ -118,10 +118,8 @@ namespace Comments.Services.TenantService
       return tenant;
     }
 
-    public async Task<Tenant> DeleteToken(Guid tenantId, string token)
+    public async Task<Tenant> DeleteTokenAsync(Guid tenantId, string token)
     {
-      await TenantTokenValidator.ValidateAndThrowAsync(token);
-
       await using var transaction = await _commentsDbContext.Database.BeginTransactionAsync();
       var tenant = await _commentsDbContext
         .Tenants
@@ -138,7 +136,7 @@ namespace Comments.Services.TenantService
       return tenant;
     }
 
-    public async Task<Tenant> Disable(Guid tenantId)
+    public async Task<Tenant> DisableAsync(Guid tenantId)
     {
       var tenant = await _commentsDbContext
         .Tenants
@@ -154,7 +152,7 @@ namespace Comments.Services.TenantService
       return tenant;
     }
 
-    public async Task<Tenant> Enable(Guid tenantId)
+    public async Task<Tenant> EnableAsync(Guid tenantId)
     {
       var tenant = await _commentsDbContext
         .Tenants
@@ -170,19 +168,19 @@ namespace Comments.Services.TenantService
       return tenant;
     }
 
-    public async Task<Tenant> GetByIdAsync(Guid tenantId)
+    public async Task<Tenant> GetByIdAsync(Guid tenantId, bool throwNotFoundException = true)
     {
       var tenant = await _commentsDbContext
         .Tenants
         .FirstOrDefaultAsync(x => x.Id == tenantId);
 
-      if (tenant == null)
+      if (tenant == null && throwNotFoundException)
         throw new TenantNotFoundException(tenantId);
 
       return tenant;
     }
 
-    public async Task<Tenant> Rename(Guid tenantId, string name)
+    public async Task<Tenant> RenameAsync(Guid tenantId, string name)
     {
       await TenantNameValidator.ValidateAndThrowAsync(name);
 

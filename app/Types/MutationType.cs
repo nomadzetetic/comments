@@ -1,5 +1,5 @@
 using Comments.App.Resolvers;
-using Comments.Security.Constants;
+using Comments.Services.Constants;
 using HotChocolate.Types;
 
 namespace Comments.App.Types
@@ -12,38 +12,38 @@ namespace Comments.App.Types
       
       descriptor
         .Field(x => x.CreateTenant(default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new [] { Roles.CommentsAdministrator })
         .Argument("name", x => x.Type<NonNullType<StringType>>())
         .Type<NonNullType<ProviderType>>();
 
       descriptor
         .Field(x => x.DisableTenant(default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new [] { Roles.CommentsAdministrator })
         .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
         .Field(x => x.EnableTenant(default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new [] { Roles.CommentsAdministrator })
         .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
         .Field(x => x.RenameTenant(default, default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new [] { Roles.CommentsAdministrator })
         .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Argument("name", x => x.Type<NonNullType<StringType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
         .Field(x => x.AddTenantToken(default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new [] { Roles.CommentsAdministrator })
         .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Type<NonNullType<ProviderType>>();
       
       descriptor
         .Field(x => x.DeleteTenantToken(default, default))
-        .Authorize(AuthorizationPolicyName.CommentsAdministrator)
+        .Authorize(new [] { Roles.CommentsAdministrator })
         .Argument("tenantId", x => x.Type<NonNullType<UuidType>>())
         .Argument("token", x => x.Type<NonNullType<StringType>>())
         .Type<NonNullType<ProviderType>>();

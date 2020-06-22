@@ -1,11 +1,10 @@
 using System;
 using System.Text;
 using Comments.App.Extensions;
+using Comments.App.Utils;
 using Comments.Data;
-using Comments.Security.CommentsAdministratorPolicy;
-using Comments.Security.CommentsRequestPolicy;
-using Comments.Security.Constants;
-using Comments.Security.TenantHeaderPolicy;
+using Comments.Services.CommentsService;
+using Comments.Services.Constants;
 using Comments.Services.TenantService;
 using HotChocolate.AspNetCore;
 using HotChocolate.AspNetCore.Playground;
@@ -14,7 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -23,30 +21,29 @@ namespace Comments.App
 {
   public class Startup
   {
-    private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
+    private readonly ICommentsConfig _commentsConfig;
     
-    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+    public Startup(ICommentsConfig commentsConfig, IWebHostEnvironment environment)
     {
       _environment = environment;
-      _configuration = configuration;
+      _commentsConfig = commentsConfig;
     }
-    
+
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddCors();
       services.AddHttpContextAccessor();
       services.AddScoped<ITenantService, TenantService>();
+      services.AddScoped<ICommentsService, CommentsService>();
       services.AddDbContext<CommentsDbContext>(options =>
       {
-        var databaseConnectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION") ??
-                                       _configuration.GetConnectionString("DefaultConnection");
-
+        var databaseConnectionString = _commentsConfig.DatabaseConnectionString;
         options.UseNpgsql(databaseConnectionString,
           builder => { builder.MigrationsAssembly("Comments.Data"); });
       });
 
-      var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? _configuration["JwtSecret"];
+      var jwtSecret = _commentsConfig.JwtTokenSecret;
       var symmetricSecurityKeyValue = Encoding.UTF8.GetBytes(jwtSecret);
       services.AddAuthentication(x =>
         {
@@ -66,18 +63,15 @@ namespace Comments.App
             IssuerSigningKey = new SymmetricSecurityKey(symmetricSecurityKeyValue)
           };
         });
+
       services.AddAuthorization(options =>
       {
-        options.AddPolicy(AuthorizationPolicyName.CommentsAdministrator, policy => policy
-          .Requirements.Add(new CommentsAdministratorRequirement()));
-        options.AddPolicy(AuthorizationPolicyName.CommentsRequest, policy => policy
-          .Requirements.Add(new CommentsRequestRequirement()));
-        options.AddPolicy(AuthorizationPolicyName.TenantHeader, policy => policy
-          .Requirements.Add(new TenantHeaderRequirement()));
+        options.AddPolicy(
+          Policy.WithCommentatorAndTenantValidation,
+          policy => policy.Requirements.Add(new Services.CommentsSecurityPolicy.Requirement())
+        );
       });
-      services.AddSingleton<IAuthorizationHandler, CommentsAdministratorAuthorizationHandler>();
-      services.AddSingleton<IAuthorizationHandler, CommentsRequestAuthorizationHandler>();
-      services.AddSingleton<IAuthorizationHandler, TenantHeaderAuthorizationHandler>();
+      services.AddScoped<IAuthorizationHandler, Services.CommentsSecurityPolicy.AuthorizationHandler>();
       services.SetupGraphql();
     }
 

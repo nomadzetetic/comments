@@ -8,13 +8,13 @@ namespace Comments.Services.TenantService
 {
   public interface ITenantService
   {
-    public Task<GenericPagedResult<Tenant>> GetList(GetListInput input);
-    public Task<Tenant> Create(string name);
-    public Task<Tenant> AddToken(Guid providerId);
-    public Task<Tenant> DeleteToken(Guid providerId, string token);
-    public Task<Tenant> Disable(Guid providerId);
-    public Task<Tenant> Enable(Guid providerId);
-    public Task<Tenant> GetByIdAsync(Guid providerId);
-    public Task<Tenant> Rename(Guid providerId, string name);
+    public Task<GenericPagedResult<Tenant>> GetListAsync(GetListInput input);
+    public Task<Tenant> CreateAsync(string name);
+    public Task<Tenant> AddTokenAsync(Guid providerId);
+    public Task<Tenant> DeleteTokenAsync(Guid providerId, string token);
+    public Task<Tenant> DisableAsync(Guid providerId);
+    public Task<Tenant> EnableAsync(Guid providerId);
+    public Task<Tenant> GetByIdAsync(Guid providerId, bool throwNotFoundException = true);
+    public Task<Tenant> RenameAsync(Guid providerId, string name);
   }
 }

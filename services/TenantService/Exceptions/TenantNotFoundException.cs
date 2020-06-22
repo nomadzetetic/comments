@@ -1,10 +1,10 @@
 using System;
 
-namespace Comments.Services.Exceptions
+namespace Comments.Services.TenantService.Exceptions
 {
   public class TenantNotFoundException : ApplicationException
   {
-    public Guid TenantId { get; set; }
+    public Guid TenantId { get; }
     public TenantNotFoundException(Guid tenantId)
     {
       TenantId = tenantId;
