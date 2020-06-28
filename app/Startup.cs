@@ -1,11 +1,7 @@
-using System;
 using System.Text;
-using Comments.App.Extensions;
-using Comments.App.Utils;
+using Comments.App.Security;
 using Comments.Data;
-using Comments.Services.CommentsService;
-using Comments.Services.Constants;
-using Comments.Services.TenantService;
+using Comments.Services;
 using HotChocolate.AspNetCore;
 using HotChocolate.AspNetCore.Playground;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,28 +18,29 @@ namespace Comments.App
   public class Startup
   {
     private readonly IWebHostEnvironment _environment;
-    private readonly ICommentsConfig _commentsConfig;
+    private readonly IConfig _config;
     
-    public Startup(ICommentsConfig commentsConfig, IWebHostEnvironment environment)
+    public Startup(IConfig config, IWebHostEnvironment environment)
     {
       _environment = environment;
-      _commentsConfig = commentsConfig;
+      _config = config;
     }
 
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddCors();
       services.AddHttpContextAccessor();
+      services.AddScoped<IAccountContext, AccountContext>();
       services.AddScoped<ITenantService, TenantService>();
-      services.AddScoped<ICommentsService, CommentsService>();
+      services.AddScoped<IAccountService, AccountService>();
       services.AddDbContext<CommentsDbContext>(options =>
       {
-        var databaseConnectionString = _commentsConfig.DatabaseConnectionString;
+        var databaseConnectionString = _config.DatabaseConnectionString;
         options.UseNpgsql(databaseConnectionString,
           builder => { builder.MigrationsAssembly("Comments.Data"); });
       });
 
-      var jwtSecret = _commentsConfig.JwtTokenSecret;
+      var jwtSecret = _config.JwtTokenSecret;
       var symmetricSecurityKeyValue = Encoding.UTF8.GetBytes(jwtSecret);
       services.AddAuthentication(x =>
         {
@@ -66,12 +63,10 @@ namespace Comments.App
 
       services.AddAuthorization(options =>
       {
-        options.AddPolicy(
-          Policy.WithCommentatorAndTenantValidation,
-          policy => policy.Requirements.Add(new Services.CommentsSecurityPolicy.Requirement())
-        );
-      });
-      services.AddScoped<IAuthorizationHandler, Services.CommentsSecurityPolicy.AuthorizationHandler>();
+        options.AddPolicy(AccountPolicy.Name,
+          policy => policy.Requirements.Add(new AccountPolicy.Requirement()));
+      }) ;
+      services.AddScoped<IAuthorizationHandler, AccountPolicy.AuthorizationHandler>();
       services.SetupGraphql();
     }
 

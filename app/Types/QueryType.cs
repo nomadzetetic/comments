@@ -1,5 +1,5 @@
 using Comments.App.Resolvers;
-using Comments.Services.Constants;
+using Comments.App.Security;
 using HotChocolate.Types;
 
 namespace Comments.App.Types
@@ -15,14 +15,14 @@ namespace Comments.App.Types
         .Authorize(new[] {Roles.CommentsAdministrator})
         .Name("tenants")
         .Argument("input", x => x.Type<GetTenantsListInputType>())
-        .Type<NonNullType<ProvidersPagedResultType>>();
+        .Type<NonNullType<TenantsPagedResultType>>();
 
       descriptor
         .Field(x => x.GetTenantById(default))
         .Authorize(new[] {Roles.CommentsAdministrator})
         .Name("tenant")
         .Argument("tenantId", x => x.Type<NonNullType<IdType>>())
-        .Type<NonNullType<ProviderType>>();
+        .Type<NonNullType<TenantType>>();
 
 #if DEBUG
       descriptor

@@ -3,55 +3,46 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Comments.App.Utils;
+using Comments.App.Security;
 using Comments.Data.Entities;
-using Comments.Services.Constants;
+using Comments.Services;
 using Comments.Services.Models;
-using Comments.Services.TenantService;
-using Comments.Services.TenantService.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
-using ClaimTypeName = Comments.Security.Constants.ClaimTypeName;
 
 namespace Comments.App.Resolvers
 {
   public class QueryResolver
   {
-    private readonly ICommentsConfig _commentsConfig;
+    private readonly IConfig _config;
     private readonly ITenantService _tenantService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    
-    public QueryResolver(
-      ICommentsConfig commentsConfig,
-      ITenantService tenantService,
-      IHttpContextAccessor httpContextAccessor)
-    {
-      _commentsConfig = commentsConfig;
-      _tenantService = tenantService;
-      _httpContextAccessor = httpContextAccessor;
-    }
-    
-    public Task<Tenant> GetTenantById(Guid tenantId) => 
-      _tenantService.GetByIdAsync(tenantId);
 
-    public Task<GenericPagedResult<Tenant>> GetTenantsList(GetListInput input) => 
-      _tenantService.GetListAsync(input);
+    public QueryResolver(IConfig config, ITenantService tenantService)
+    {
+      _tenantService = tenantService;
+      _config = config;
+    }
+
+    public Task<Tenant> GetTenantById(Guid tenantId) =>
+      _tenantService.GetById(tenantId);
+
+    public Task<GenericPagedResult<Tenant>> GetTenantsList(GetTenantsListOptions options) =>
+      _tenantService.GetList(options);
 
 #if DEBUG
     public string GetJwtToken(bool commentsAdministrator, string commentatorName, string commentatorId)
     {
       var tokenHandler = new JwtSecurityTokenHandler();
-      var key = Encoding.UTF8.GetBytes(_commentsConfig.JwtTokenSecret);
+      var key = Encoding.UTF8.GetBytes(_config.JwtTokenSecret);
 
       var claimsIdentity = new ClaimsIdentity();
       if (commentsAdministrator)
         claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, Roles.CommentsAdministrator));
 
-      if (!string.IsNullOrWhiteSpace(commentatorName))
-        claimsIdentity.AddClaim(new Claim(ClaimTypeName.CommentatorName, commentatorName.Trim()));
-
-      if (!string.IsNullOrWhiteSpace(commentatorId))
-        claimsIdentity.AddClaim(new Claim(ClaimTypeName.CommentatorId, commentatorId.Trim()));
+      // if (!string.IsNullOrWhiteSpace(commentatorName))
+      //   claimsIdentity.AddClaim(new Claim(ClaimTypeName.CommentatorName, commentatorName.Trim()));
+      //
+      // if (!string.IsNullOrWhiteSpace(commentatorId))
+      //   claimsIdentity.AddClaim(new Claim(ClaimTypeName.CommentatorId, commentatorId.Trim()));
 
       var tokenDescriptor = new SecurityTokenDescriptor
       {

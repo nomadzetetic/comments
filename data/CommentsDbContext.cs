@@ -10,7 +10,7 @@ namespace Comments.Data
     {
     }
     
-    public DbSet<Commentator> Commentators { get; set; }
+    public DbSet<Account> Accounts { get; set; }
     public DbSet<Resource> Resources { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Reaction> Likes { get; set; }
@@ -43,7 +43,7 @@ namespace Comments.Data
         entity.Property(x => x.Tokens).HasColumnType("jsonb").IsRequired();
       });
 
-      modelBuilder.Entity<Commentator>(entity =>
+      modelBuilder.Entity<Account>(entity =>
       {
         entity.HasKey(x => new { x.Id, x.TenantId });
         entity.Property(x => x.Id).IsRequired();
@@ -68,9 +68,9 @@ namespace Comments.Data
           .OnDelete(DeleteBehavior.Cascade);
 
         entity
-          .HasOne(x => x.Commentator)
+          .HasOne(x => x.Account)
           .WithMany()
-          .HasForeignKey(x => x.CommentatorId);
+          .HasForeignKey(x => x.AccountId);
 
         entity
           .HasOne(x => x.Tenant)
@@ -92,11 +92,11 @@ namespace Comments.Data
 
       modelBuilder.Entity<Reaction>(entity =>
       {
-        entity.HasKey(x => new {x.CommentId, AuthorId = x.CommentatorId});
+        entity.HasKey(x => new {x.CommentId, AuthorId = x.AccountId});
         entity.Property(x => x.Value).IsRequired();
-        entity.HasOne(x => x.Commentator)
+        entity.HasOne(x => x.Account)
           .WithMany()
-          .HasForeignKey(x => x.CommentatorId);
+          .HasForeignKey(x => x.AccountId);
 
         entity.HasOne(x => x.Comment)
           .WithMany()
