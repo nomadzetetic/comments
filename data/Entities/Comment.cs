@@ -8,11 +8,9 @@ namespace Comments.Data.Entities
     public Guid Id { get; set; }
     public Guid? ParentId { get; set; }
     public virtual Comment Parent { get; set; }
-    public Guid CommentatorId { get; set; }
-    public virtual Commentator Commentator { get; set; }
-    public Guid TenantId { get; set; }
-    public Tenant Tenant { get; set; }
-    public string ResourceId { get; set; }
+    public Guid AccountId { get; set; }
+    public virtual Account Account { get; set; }
+    public string ResourceKey { get; set; }
     public Resource Resource { get; set; }
     public string Message { get; set; }
     public int Replies { get; set; }

@@ -2,13 +2,23 @@ using System;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Comments.Services.CommentsService.Models
+namespace Comments.Services.Models
 {
   public class UpdateCommentInput
   {
+    private string _accountDisplayName;
+    
     public Guid CommentId { get; set; }
-    public Guid CommentatorId { get; set; }
+    public Guid AccountId { get; set; }
+
+    public string AccountDisplayName
+    {
+      get => _accountDisplayName;
+      set => _accountDisplayName = value?.Trim();
+    }
+
     public string Message { get; set; }
+
     public class Validator : AbstractValidator<UpdateCommentInput>
     {
       private Validator()

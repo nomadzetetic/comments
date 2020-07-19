@@ -6,8 +6,10 @@ namespace Comments.Data.Entities
   {
     public Guid CommentId { get; set; }
     public Comment Comment { get; set; }
-    public Guid CommentatorId { get; set; }
-    public Commentator Commentator { get; set; }
+    public Guid AccountId { get; set; }
+    public Account Account { get; set; }
+    public string ResourceKey { get; set; }
+    public Resource Resource { get; set; }
     public bool Value { get; set; }
     public DateTimeOffset Created { get; set; }
   }
