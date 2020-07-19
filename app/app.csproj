@@ -6,6 +6,16 @@
         <RootNamespace>Comments.App</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(RunConfiguration)' == 'app' ">
+      <StartAction>Project</StartAction>
+      <ExternalConsole>true</ExternalConsole>
+      <EnvironmentVariables>
+        <Variable name="DB_CONNECTION_STRING" value="Host=localhost;Database=comments;Username=nomadzetetic;Password=nomadzetetic" />
+        <Variable name="JWT_SECRET" value="9s4&quot;?30fhj=q[bpfgc#@RwFH(NZX&quot;Kvbcqo032rh-bfLpig'fapn;c;1-r" />
+        <Variable name="ASPNETCORE_ENVIRONMENT" value="Development" />
+      </EnvironmentVariables>
+      <ApplicationURL>https://localhost:5001;http://localhost:5000</ApplicationURL>
+    </PropertyGroup>
     <ItemGroup>
       <ProjectReference Include="..\data\data.csproj" />
       <ProjectReference Include="..\security\security.csproj" />

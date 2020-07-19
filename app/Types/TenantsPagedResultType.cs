@@ -4,7 +4,7 @@ using HotChocolate.Types;
 
 namespace Comments.App.Types
 {
-  public class ProvidersPagedResultType : ObjectType<GenericPagedResult<Tenant>>
+  public class TenantsPagedResultType : ObjectType<GenericPagedResult<Tenant>>
   {
     protected override void Configure(IObjectTypeDescriptor<GenericPagedResult<Tenant>> descriptor)
     {
@@ -26,7 +26,7 @@ namespace Comments.App.Types
 
       descriptor
         .Field(x => x.Data)
-        .Type<NonNullType<ListType<NonNullType<ProviderType>>>>();
+        .Type<NonNullType<ListType<NonNullType<TenantType>>>>();
     }
   }
 }

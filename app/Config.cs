@@ -1,19 +1,19 @@
 using System;
 using Microsoft.Extensions.Configuration;
 
-namespace Comments.App.Utils
+namespace Comments.App
 {
-  public interface ICommentsConfig
+  public interface IConfig
   {
     public string JwtTokenSecret { get; }
     public string DatabaseConnectionString { get; }
   }
   
-  public class CommentsConfig : ICommentsConfig
+  public class Config : IConfig
   {
     private readonly IConfiguration _configuration;
 
-    public CommentsConfig(IConfiguration configuration)
+    public Config(IConfiguration configuration)
     {
       _configuration = configuration;
     }

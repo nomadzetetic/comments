@@ -1,12 +1,11 @@
 using System;
 using Comments.App.Types;
-using Comments.App.Types.Enums;
 using HotChocolate;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Comments.App.Extensions
+namespace Comments.App
 {
-  public static class ServiceCollection
+  public static class Extensions
   {
     public static void SetupGraphql(this IServiceCollection services)
     {
@@ -19,11 +18,13 @@ namespace Comments.App.Extensions
         .New()
         .AddServices(serviceProvider)
         .AddAuthorizeDirectiveType()
+        .AddType<AccountType>()
+        .AddType<CommentType>()
         .AddType<SortDirectionEnumType>()
-        .AddType<ProviderOrderByEnumType>()
+        .AddType<TenantOrderByEnumType>()
         .AddType<GetTenantsListInputType>()
-        .AddType<ProvidersPagedResultType>()
-        .AddType<ProviderType>()
+        .AddType<TenantsPagedResultType>()
+        .AddType<NewCommentInputType>()
         .AddQueryType<QueryType>()
         .AddMutationType<MutationType>()
         .Create();

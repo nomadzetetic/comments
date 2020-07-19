@@ -1,6 +1,6 @@
-namespace Comments.Services.Constants
+namespace Comments.App.Security
 {
-  public class Roles
+  public static class Roles
   {
     public const string CommentsAdministrator = "CommentsAdministrator";
   }
