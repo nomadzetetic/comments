@@ -1,7 +1,7 @@
 using Comments.Data.Entities;
 using HotChocolate.Types;
 
-namespace Comments.App.Types
+namespace Comments.App.GraphQL.Types
 {
   public class AccountType : ObjectType<Account>
   {
@@ -9,10 +9,14 @@ namespace Comments.App.Types
     {
       descriptor
         .Field(x => x.Banned)
-        .Type<NonNullType<BooleanType>>();
+        .Ignore();
 
       descriptor
         .Field(x => x.Created)
+        .Type<NonNullType<DateTimeType>>();
+      
+      descriptor
+        .Field(x => x.Updated)
         .Type<NonNullType<DateTimeType>>();
 
       descriptor
@@ -20,24 +24,12 @@ namespace Comments.App.Types
         .Type<NonNullType<UuidType>>();
 
       descriptor
-        .Field(x => x.Name)
+        .Field(x => x.DisplayName)
         .Type<NonNullType<StringType>>();
-
-      descriptor
-        .Field(x => x.Tenant)
-        .Ignore();
-
-      descriptor
-        .Field(x => x.Updated)
-        .Type<NonNullType<DateTimeType>>();
 
       descriptor
         .Field(x => x.AvatarUrl)
         .Type<NonNullType<StringType>>();
-
-      descriptor
-        .Field(x => x.TenantId)
-        .Ignore();
     }
   }
 }

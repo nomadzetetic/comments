@@ -1,12 +1,13 @@
 using System;
+using System.Net;
+using Comments.Core;
 
 namespace Comments.Services.Exceptions
 {
   public class AccountBannedException : CommentsException
   {
-    public AccountBannedException(Guid accountId) : base("Account banned")
+    public AccountBannedException(Guid accountId) : base( "Account banned", HttpStatusCode.Forbidden)
     {
-      PropertyName = "AccountId";
       Value = accountId;
     }
   }

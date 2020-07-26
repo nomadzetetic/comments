@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,8 +20,8 @@ namespace Comments.Services.CommentsService
     {
       _dbContext = dbContext;
     }
-    
-    public async Task<Account> GetAccount(Guid accountId, bool throwIfBanned = true, bool throwIfNotFound = false)
+   
+    private async Task<Account> GetAccountById(Guid accountId, bool throwIfBanned = true, bool throwIfNotFound = false)
     {
       var account = await _dbContext
         .Accounts
@@ -35,7 +36,7 @@ namespace Comments.Services.CommentsService
       return account;
     }
     
-    public async Task<Account> CreateAccount(Guid accountId, string accountDisplayName, DateTimeOffset now)
+    private async Task<Account> CreateAccount(Guid accountId, string accountDisplayName, DateTimeOffset now)
     {
       var account = new Account
       {
@@ -51,7 +52,7 @@ namespace Comments.Services.CommentsService
       return account;
     }
 
-    private async Task<bool> IsTooDeep(Guid? parentId)
+    private async Task<bool> IsParentIdTooDeep(Guid? parentId)
     {
       if (!parentId.HasValue) return false;
 
@@ -85,11 +86,61 @@ namespace Comments.Services.CommentsService
       return resource;
     }
 
+    private async Task UpdateSocialActivitiesStats(Comment comment, Resource resource, DateTimeOffset now)
+    {
+      comment.Likes = await _dbContext
+        .Reactions
+        .CountAsync(x => x.ResourceKey == resource.ResourceKey && x.CommentId == comment.Id && x.Value);
+      
+      comment.Dislikes = await _dbContext
+        .Reactions
+        .CountAsync(x => x.ResourceKey == resource.ResourceKey && x.CommentId == comment.Id && x.Value == false);
+
+      comment.Updated = now;
+      
+      await _dbContext.SaveChangesAsync();
+
+      if (comment.ParentId.HasValue)
+      {
+        var parentComment = await _dbContext
+          .Comments
+          .FirstAsync(x => x.Id == comment.ParentId.Value);
+
+        parentComment.Likes = await _dbContext
+          .Comments
+          .Where(x => x.ParentId == parentComment.Id)
+          .SumAsync(x => x.Likes);
+        
+        parentComment.Dislikes = await _dbContext
+          .Comments
+          .Where(x => x.ParentId == parentComment.Id)
+          .SumAsync(x => x.Dislikes);
+
+        parentComment.Updated = now;
+        
+        await _dbContext.SaveChangesAsync();
+      }
+
+      resource.Likes = await _dbContext
+        .Comments
+        .Where(x => x.ResourceKey == resource.ResourceKey && x.ParentId == null)
+        .SumAsync(x => x.Likes);
+      
+      resource.Dislikes = await _dbContext
+        .Comments
+        .Where(x => x.ResourceKey == resource.ResourceKey && x.ParentId == null)
+        .SumAsync(x => x.Dislikes);
+
+      resource.Updated = now;
+      
+      await _dbContext.SaveChangesAsync();
+    }
+
     public async Task<Comment> AddComment(NewCommentInput input)
     {
       await NewCommentInput.Validator.ValidateAndThrowAsync(input);
 
-      var account = await GetAccount(input.AccountId);
+      var account = await GetAccountById(input.AccountId);
 
       await using var transaction = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.Snapshot);
       try
@@ -98,7 +149,7 @@ namespace Comments.Services.CommentsService
 
         account ??= await CreateAccount(input.AccountId, input.AccountDisplayName, now);
 
-        if (input.ParentId.HasValue && await IsTooDeep(input.ParentId))
+        if (input.ParentId.HasValue && await IsParentIdTooDeep(input.ParentId))
           throw new CommentsNestingException(input.ParentId.Value);
 
         var resource = await GetOrCreateResource(input.ResourceKey);
@@ -147,7 +198,7 @@ namespace Comments.Services.CommentsService
         throw;
       }
     }
-
+    
     public async Task<Comment> UpdateComment(UpdateCommentInput input)
     {
       await UpdateCommentInput.Validator.ValidateAndThrowAsync(input);
@@ -155,7 +206,7 @@ namespace Comments.Services.CommentsService
       await using var transaction = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.Snapshot);
       try
       {
-        var account = await GetAccount(input.AccountId, throwIfNotFound: true, throwIfBanned: true);
+        var account = await GetAccountById(input.AccountId, throwIfNotFound: true, throwIfBanned: true);
         var now = DateTimeOffset.Now;
         account.DisplayName = input.AccountDisplayName;
         account.Updated = now;
@@ -166,10 +217,9 @@ namespace Comments.Services.CommentsService
           throw new CommentNotFoundException(input.CommentId);
 
         if (comment.AccountId != account.Id)
-          throw new ForbiddenException(
+          throw new UpdateCommentForbiddenException(
             "This comment does not belong to yours account",
-            "CommentId",
-            input.CommentId);
+            input.CommentId, account.Id);
 
         comment.Message = input.Message;
         comment.Updated = now;
@@ -191,7 +241,7 @@ namespace Comments.Services.CommentsService
       await using var transaction = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.Snapshot);
       try
       {
-        await GetAccount(input.AccountId, throwIfNotFound: true, throwIfBanned: true);
+        await GetAccountById(input.AccountId, throwIfNotFound: true, throwIfBanned: true);
 
         var commentQuery = _dbContext.Comments.Where(x => x.Id == input.CommentId);
         if (!input.IsAdministrator)
@@ -242,71 +292,41 @@ namespace Comments.Services.CommentsService
       }
     }
 
-    public async Task<GenericPagedResult<Comment>> GetComments(GetCommentsInput input)
+    public async Task<ICollection<Comment>> GetComments(GetCommentsInput input)
     {
-      GetPaginationVars(
-        input,
-        out var inputSort,
-        out var inputOrderBy,
-        out var page,
-        out var limit,
-        out var skip);
-
       var query = _dbContext
         .Comments
-        .Where(x => x.ResourceKey == input.ResourceKey)
         .Include(x => x.Resource)
-        .Take(limit)
-        .Skip(skip);
+        .Include(x => x.Account)
+        .Where(x => x.ResourceKey == input.ResourceKey);
 
-      query = ApplySorting(query, inputOrderBy, inputSort);
+      var sortDirection = input?.SortDirection ?? SortDirectionEnum.Desc;
+      var sortByField = input?.SortByField ?? CommentFieldEnum.Created;
 
-      var comments = await query.AsNoTracking().ToListAsync();
-      var total = comments.Count > 0 ? comments.First().Resource.Replies : 0;
-      var pages = Math.Ceiling((double) total / limit);
-
-      return new GenericPagedResult<Comment>()
+      query = sortByField switch
       {
-        Page = page,
-        Pages = double.IsNaN(pages) ? 0 : (int) pages,
-        Total = total,
-        Limit = limit,
-        Data = comments
+        CommentFieldEnum.Created => sortDirection == SortDirectionEnum.Asc
+          ? query.OrderBy(x => x.Created)
+          : query.OrderByDescending(x => x.Created),
+        CommentFieldEnum.Likes => sortDirection == SortDirectionEnum.Asc
+          ? query.OrderBy(x => x.Likes)
+          : query.OrderByDescending(x => x.Likes),
+        CommentFieldEnum.Dislikes => sortDirection == SortDirectionEnum.Asc
+          ? query.OrderBy(x => x.Dislikes)
+          : query.OrderByDescending(x => x.Dislikes),
+        CommentFieldEnum.Replies => sortDirection == SortDirectionEnum.Asc
+          ? query.OrderBy(x => x.Replies)
+          : query.OrderByDescending(x => x.Replies),
+        _ => query
       };
-    }
 
-    public async Task<GenericPagedResult<Comment>> GetSubComments(GetSubCommentsInput input)
-    {
-      GetPaginationVars(
-        input,
-        out var inputSort,
-        out var inputOrderBy,
-        out var page,
-        out var limit,
-        out var skip);
+      query = input?.ParentId != null
+        ? query.Where(x => x.ParentId != null && x.ParentId == input.ParentId)
+        : query.Where(x => x.ParentId == null);
 
-      var query = _dbContext
-        .Comments
-        .Where(x => x.ParentId != null && x.ParentId == input.ParentId)
-        .Where(x => x.ResourceKey == input.ResourceKey)
-        .Include(x => x.Parent)
-        .Take(limit)
-        .Skip(skip);
-
-      query = ApplySorting(query, inputOrderBy, inputSort);
-
+      query = input?.Cursor != null ? query.SkipWhile(x => x.Id == input.Cursor).Take(50) : query.Take(50);
       var comments = await query.AsNoTracking().ToListAsync();
-      var total = comments.Count > 0 ? comments.First().Parent.Replies : 0;
-      var pages = Math.Ceiling((double) total / limit);
-
-      return new GenericPagedResult<Comment>()
-      {
-        Page = page,
-        Pages = double.IsNaN(pages) ? 0 : (int) pages,
-        Total = total,
-        Limit = limit,
-        Data = comments
-      };
+      return comments;
     }
 
     public async Task UpdateRepliesStats(Comment comment, Resource resource, DateTimeOffset now)
@@ -334,63 +354,13 @@ namespace Comments.Services.CommentsService
         await _dbContext.SaveChangesAsync();
       }
     }
-
-    public async Task UpdateSocialActivitiesStats(Comment comment, Resource resource, DateTimeOffset now)
-    {
-      comment.Likes = await _dbContext
-        .Reactions
-        .CountAsync(x => x.ResourceKey == resource.ResourceKey && x.CommentId == comment.Id && x.Value);
-      
-      comment.Dislikes = await _dbContext
-        .Reactions
-        .CountAsync(x => x.ResourceKey == resource.ResourceKey && x.CommentId == comment.Id && x.Value == false);
-
-      comment.Updated = now;
-      
-      await _dbContext.SaveChangesAsync();
-
-      if (comment.ParentId.HasValue)
-      {
-        var parentComment = await _dbContext
-          .Comments
-          .FirstAsync(x => x.Id == comment.ParentId.Value);
-
-        parentComment.Likes = await _dbContext
-          .Comments
-          .Where(x => x.ParentId == parentComment.Id)
-          .SumAsync(x => x.Likes);
-        
-        parentComment.Dislikes = await _dbContext
-          .Comments
-          .Where(x => x.ParentId == parentComment.Id)
-          .SumAsync(x => x.Dislikes);
-
-        parentComment.Updated = now;
-        
-        await _dbContext.SaveChangesAsync();
-      }
-
-      resource.Likes = await _dbContext
-        .Comments
-        .Where(x => x.ResourceKey == resource.ResourceKey && x.ParentId == null)
-        .SumAsync(x => x.Likes);
-      
-      resource.Dislikes = await _dbContext
-        .Comments
-        .Where(x => x.ResourceKey == resource.ResourceKey && x.ParentId == null)
-        .SumAsync(x => x.Dislikes);
-
-      resource.Updated = now;
-      
-      await _dbContext.SaveChangesAsync();
-    }
     
     public async Task<Comment> Like(ReactionInput input)
     {
       await using var transaction = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.Snapshot);
       try
       {
-        var account = await GetAccount(input.AccountId);
+        var account = await GetAccountById(input.AccountId);
 
         var now = DateTimeOffset.Now;
         account ??= await CreateAccount(input.AccountId, input.AccountDisplayName, now);
@@ -440,50 +410,6 @@ namespace Comments.Services.CommentsService
         await transaction.RollbackAsync();
         throw;
       }
-    }
-    
-    private static void GetPaginationVars(
-      IGetCommentsPagination input,
-      out SortDirectionEnum inputSort,
-      out CommentFieldEnum inputOrderBy,
-      out int page,
-      out int limit,
-      out int skip)
-    {
-      page = input?.Page ?? 1;
-      var inputLimit = input?.Limit ?? 30;
-
-      if (page < 1)
-        page = 1;
-
-      inputSort = input?.SortDirection ?? SortDirectionEnum.Desc;
-      inputOrderBy = input?.SortByField ?? CommentFieldEnum.Created;
-
-      limit = inputLimit < 1 ? 1 : inputLimit > 100 ? 100 : inputLimit;
-      skip = (page - 1) * limit;
-    }
-
-    private static IQueryable<Comment> ApplySorting(IQueryable<Comment> query, CommentFieldEnum inputOrderBy,
-      SortDirectionEnum inputSort)
-    {
-      query = inputOrderBy switch
-      {
-        CommentFieldEnum.Created => inputSort == SortDirectionEnum.Asc
-          ? query.OrderBy(x => x.Created)
-          : query.OrderByDescending(x => x.Created),
-        CommentFieldEnum.Likes => inputSort == SortDirectionEnum.Asc
-          ? query.OrderBy(x => x.Likes)
-          : query.OrderByDescending(x => x.Likes),
-        CommentFieldEnum.Dislikes => inputSort == SortDirectionEnum.Asc
-          ? query.OrderBy(x => x.Dislikes)
-          : query.OrderByDescending(x => x.Dislikes),
-        CommentFieldEnum.Replies => inputSort == SortDirectionEnum.Asc
-          ? query.OrderBy(x => x.Replies)
-          : query.OrderByDescending(x => x.Replies),
-        _ => query
-      };
-
-      return query;
     }
   }
 }

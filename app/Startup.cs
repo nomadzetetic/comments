@@ -30,12 +30,11 @@ namespace Comments.App
     {
       services.AddCors();
       services.AddHttpContextAccessor();
-      services.AddScoped<IAccountContext, AccountContext>();
       services.AddDbContext<CommentsDbContext>(options =>
       {
         var databaseConnectionString = _config.DatabaseConnectionString;
         options.UseNpgsql(databaseConnectionString,
-          builder => { builder.MigrationsAssembly("Comments.Data"); });
+          builder => { builder.MigrationsAssembly("comments.data"); });
       });
       services.AddScoped<ICommentsService, CommentsServiceImpl>();
       var jwtSecret = _config.JwtTokenSecret;
@@ -61,10 +60,10 @@ namespace Comments.App
 
       services.AddAuthorization(options =>
       {
-        options.AddPolicy(AccountPolicy.Name,
-          policy => policy.Requirements.Add(new AccountPolicy.Requirement()));
+        options.AddPolicy(Constants.AccountPolicyName,
+          policy => policy.Requirements.Add(new AccountPolicyRequirement()));
       }) ;
-      services.AddScoped<IAuthorizationHandler, AccountPolicy.AuthorizationHandler>();
+      services.AddScoped<IAuthorizationHandler, AccountPolicyAuthorizationHandler>();
       services.SetupGraphql();
     }
 

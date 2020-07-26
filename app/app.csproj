@@ -2,8 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <AssemblyName>Comments.App</AssemblyName>
+        <AssemblyName>comments.app</AssemblyName>
         <RootNamespace>Comments.App</RootNamespace>
+        <Company>Nomadzetetic</Company>
+        <Product>Comments Microservice</Product>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(RunConfiguration)' == 'app' ">

@@ -3,7 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Comments.Data</RootNamespace>
-    <AssemblyName>Comments.Data</AssemblyName>
+    <AssemblyName>comments.data</AssemblyName>
+    <Company>Nomadzetetic</Company>
+    <Product>Comments Microservice</Product>
   </PropertyGroup>
 
   <ItemGroup>

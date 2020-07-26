@@ -2,17 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>Comments.Services</AssemblyName>
+    <AssemblyName>comments.services</AssemblyName>
     <RootNamespace>Comments.Services</RootNamespace>
+    <Company>Nomadzetetic</Company>
+    <Product>Comments Microservice</Product>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="8.6.2" />
-    <PackageReference Include="HotChocolate" Version="10.4.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="3.1.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\core\core.csproj" />
     <ProjectReference Include="..\data\data.csproj" />
   </ItemGroup>
 

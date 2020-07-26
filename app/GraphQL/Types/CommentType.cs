@@ -1,7 +1,7 @@
 using Comments.Data.Entities;
 using HotChocolate.Types;
 
-namespace Comments.App.Types
+namespace Comments.App.GraphQL.Types
 {
   public class CommentType : ObjectType<Comment>
   {
@@ -36,15 +36,15 @@ namespace Comments.App.Types
         .Ignore();
 
       descriptor
+        .Field(x => x.ParentId)
+        .Type<UuidType>();
+
+      descriptor
         .Field(x => x.Replies)
         .Type<NonNullType<IntType>>();
 
       descriptor
         .Field(x => x.Resource)
-        .Ignore();
-
-      descriptor
-        .Field(x => x.Tenant)
         .Ignore();
 
       descriptor
@@ -56,19 +56,11 @@ namespace Comments.App.Types
         .Ignore();
 
       descriptor
-        .Field(x => x.ParentId)
-        .Ignore();
-
-      descriptor
-        .Field(x => x.ResourceId)
+        .Field(x => x.ResourceKey)
         .Ignore();
       
       descriptor
         .Field(x => x.SubComments)
-        .Ignore();
-
-      descriptor
-        .Field(x => x.TenantId)
         .Ignore();
     }
   }
