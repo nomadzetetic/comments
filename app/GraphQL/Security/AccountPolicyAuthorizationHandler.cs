@@ -3,7 +3,7 @@ using HotChocolate.Resolvers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
-namespace Comments.App.Security
+namespace Comments.App.GraphQL.Security
 {
   public class AccountPolicyAuthorizationHandler : AuthorizationHandler<AccountPolicyRequirement, IResolverContext>
   {

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace Comments.App.Security
+namespace Comments.App.GraphQL.Security
 {
   public class AccountPolicyRequirement : IAuthorizationRequirement
   {

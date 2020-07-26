@@ -1,5 +1,6 @@
+using System;
 using System.Text;
-using Comments.App.Security;
+using Comments.App.GraphQL.Security;
 using Comments.Data;
 using Comments.Services.CommentsService;
 using HotChocolate.AspNetCore;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -17,13 +19,13 @@ namespace Comments.App
 {
   public class Startup
   {
+    private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
-    private readonly IConfig _config;
     
-    public Startup(IConfig config, IWebHostEnvironment environment)
+    public Startup(IWebHostEnvironment environment,IConfiguration configuration)
     {
       _environment = environment;
-      _config = config;
+      _configuration = configuration;
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -32,12 +34,15 @@ namespace Comments.App
       services.AddHttpContextAccessor();
       services.AddDbContext<CommentsDbContext>(options =>
       {
-        var databaseConnectionString = _config.DatabaseConnectionString;
+        var databaseConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ??
+          _configuration.GetConnectionString("DefaultConnection");
+
         options.UseNpgsql(databaseConnectionString,
           builder => { builder.MigrationsAssembly("comments.data"); });
       });
       services.AddScoped<ICommentsService, CommentsServiceImpl>();
-      var jwtSecret = _config.JwtTokenSecret;
+      var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? _configuration["JwtSecret"];
+
       var symmetricSecurityKeyValue = Encoding.UTF8.GetBytes(jwtSecret);
       services.AddAuthentication(x =>
         {
