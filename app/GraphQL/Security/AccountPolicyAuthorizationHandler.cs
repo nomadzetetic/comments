@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using Comments.App.Utils;
+using Comments.Services.Validators;
 using HotChocolate.Resolvers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,6 +22,7 @@ namespace Comments.App.GraphQL.Security
     {
       var accountId = _httpContextAccessor.AccountId();
       var accountDisplayName = _httpContextAccessor.AccountDisplayName();
+      AccountDisplayNameValidator.ValidateAndThrow(accountDisplayName);
 
       if (accountId.HasValue && !string.IsNullOrWhiteSpace(accountDisplayName))
         context.Succeed(requirement);

@@ -1,7 +1,7 @@
 using Comments.Services.Models;
 using HotChocolate.Types;
 
-namespace Comments.App.GraphQL.Types
+namespace Comments.App.GraphQL.Types.Inputs
 {
   public class NewCommentInputType : InputObjectType<NewCommentInput>
   {
@@ -14,7 +14,7 @@ namespace Comments.App.GraphQL.Types
       descriptor
         .Field(x => x.Message)
         .Type<NonNullType<StringType>>();
-      
+
       descriptor
         .Field(x => x.ResourceKey)
         .Type<NonNullType<StringType>>();

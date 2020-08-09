@@ -1,5 +1,5 @@
-using System;
 using System.Threading.Tasks;
+using Comments.App.Utils;
 using Comments.Data.Entities;
 using Comments.Services.CommentsService;
 using Comments.Services.Models;
@@ -11,7 +11,7 @@ namespace Comments.App.GraphQL.Resolvers
   {
     private readonly ICommentsService _commentsService;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    
+
     public MutationResolver(ICommentsService commentsService, IHttpContextAccessor httpContextAccessor)
     {
       _commentsService = commentsService;
@@ -34,16 +34,11 @@ namespace Comments.App.GraphQL.Resolvers
       return comment;
     }
 
-    public async Task<bool> DeleteComment(Guid commentId)
+    public async Task<bool> DeleteComment(DeleteCommentInput input)
     {
-      var accountId = _httpContextAccessor.AccountIdExact();
-      var isAdministrator = _httpContextAccessor.IsCommentsAdministrator();
-      var result = await _commentsService.DeleteComment(new DeleteCommentInput
-      {  
-        AccountId = accountId,
-        IsAdministrator = isAdministrator,
-        CommentId = commentId
-      });
+      input.AccountId = _httpContextAccessor.AccountIdExact();
+      input.IsAdministrator = _httpContextAccessor.IsCommentsAdministrator();
+      var result = await _commentsService.DeleteComment(input);
       return result;
     }
 

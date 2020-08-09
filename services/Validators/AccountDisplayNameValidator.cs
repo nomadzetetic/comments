@@ -9,7 +9,7 @@ namespace Comments.Services.Validators
       RuleFor(x => x.AccountDisplayName)
         .NotEmpty()
         .MaximumLength(50)
-        .Matches("^[a-zA-ZА-Яа-я0-9_\\-]*$|^[a-zA-ZА-Яа-я0-9_\\-]*\\s{1}[a-zA-ZА-Яа-я0-9_\\-]*$")
+        .Matches("^[\\p{L}0-9_\\-]*$|^[\\p{L}0-9_\\-]*\\s{1}[\\p{L}0-9_\\-]*$")
         .WithMessage("Account Display Name contains not allowed characters.");
     }
 

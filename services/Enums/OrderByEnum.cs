@@ -1,6 +1,6 @@
 namespace Comments.Services.Enums
 {
-  public enum SortDirectionEnum
+  public enum OrderByEnum
   {
     Asc,
     Desc

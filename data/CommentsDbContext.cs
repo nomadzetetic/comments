@@ -9,6 +9,7 @@ namespace Comments.Data
       : base(options)
     {
     }
+
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Resource> Resources { get; set; }
     public DbSet<Comment> Comments { get; set; }
@@ -45,9 +46,7 @@ namespace Comments.Data
         entity
           .HasMany(x => x.SubComments)
           .WithOne(x => x.Parent)
-          .HasForeignKey(x => x.ParentId)
-          .IsRequired()
-          .OnDelete(DeleteBehavior.Cascade);
+          .HasForeignKey(x => x.ParentId);
 
         entity
           .HasOne(x => x.Account)
@@ -74,14 +73,14 @@ namespace Comments.Data
         entity.ToTable("reactions");
         entity.HasKey(x => new {x.CommentId, x.AccountId, x.ResourceKey});
         entity.Property(x => x.Value).IsRequired();
-        
+
         entity
           .HasOne(x => x.Resource)
           .WithMany()
           .HasForeignKey(x => x.ResourceKey)
           .IsRequired()
           .OnDelete(DeleteBehavior.Cascade);
-        
+
         entity.HasOne(x => x.Account)
           .WithMany()
           .HasForeignKey(x => x.AccountId)

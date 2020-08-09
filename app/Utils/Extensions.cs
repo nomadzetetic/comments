@@ -1,11 +1,14 @@
 using System;
 using System.Linq;
 using Comments.App.GraphQL.Types;
+using Comments.App.GraphQL.Types.Enums;
+using Comments.App.GraphQL.Types.Inputs;
+using Comments.Core;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Comments.App
+namespace Comments.App.Utils
 {
   public static class Extensions
   {
@@ -16,15 +19,12 @@ namespace Comments.App
 
     public static bool IsCommentsAdministrator(this IHttpContextAccessor httpContextAccessor)
     {
-      var claim = httpContextAccessor
+      return httpContextAccessor
         .HttpContext
         .User
-        .Claims
-        .FirstOrDefault(x => x.Type == Constants.CommentsAdministratorClaim);
-
-      return claim?.Value == "true";
+        .IsInRole(Constants.CommentsAdministratorRoleName);
     }
-    
+
     public static Guid? AccountId(this IHttpContextAccessor httpContextAccessor)
     {
       var claim = httpContextAccessor
@@ -38,7 +38,7 @@ namespace Comments.App
 
       return null;
     }
-    
+
     public static Guid AccountIdExact(this IHttpContextAccessor httpContextAccessor)
     {
       var claim = httpContextAccessor
@@ -69,11 +69,14 @@ namespace Comments.App
         .AddAuthorizeDirectiveType()
         .AddType<AccountType>()
         .AddType<CommentType>()
-        .AddType<SortDirectionEnumType>()
+        .AddType<CommentsPagedResultType>()
+        .AddType<OrderByEnumType>()
         .AddType<CommentFieldEnumType>()
         .AddType<NewCommentInputType>()
+        .AddType<GetCommentsInputType>()
         .AddType<UpdateCommentInputType>()
         .AddType<ReactionInputType>()
+        .AddType<DeleteCommentInputType>()
         .AddQueryType<QueryType>()
         .AddMutationType<MutationType>()
         .Create();

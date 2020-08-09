@@ -10,15 +10,15 @@ namespace Comments.App.GraphQL.Types
       descriptor
         .Field(x => x.Account)
         .Type<NonNullType<AccountType>>();
-      
+
       descriptor
         .Field(x => x.Created)
         .Type<NonNullType<DateTimeType>>();
-      
+
       descriptor
         .Field(x => x.Dislikes)
         .Type<NonNullType<IntType>>();
-      
+
       descriptor
         .Field(x => x.Id)
         .Type<NonNullType<UuidType>>();
@@ -30,7 +30,7 @@ namespace Comments.App.GraphQL.Types
       descriptor
         .Field(x => x.Message)
         .Type<NonNullType<StringType>>();
-      
+
       descriptor
         .Field(x => x.Parent)
         .Ignore();
@@ -58,7 +58,7 @@ namespace Comments.App.GraphQL.Types
       descriptor
         .Field(x => x.ResourceKey)
         .Ignore();
-      
+
       descriptor
         .Field(x => x.SubComments)
         .Ignore();

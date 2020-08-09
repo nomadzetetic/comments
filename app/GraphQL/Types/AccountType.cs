@@ -14,7 +14,7 @@ namespace Comments.App.GraphQL.Types
       descriptor
         .Field(x => x.Created)
         .Type<NonNullType<DateTimeType>>();
-      
+
       descriptor
         .Field(x => x.Updated)
         .Type<NonNullType<DateTimeType>>();

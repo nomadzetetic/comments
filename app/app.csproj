@@ -18,9 +18,12 @@
       </EnvironmentVariables>
       <ApplicationURL>https://localhost:5001;http://localhost:5000</ApplicationURL>
     </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DefineConstants>TRACE;DEV</DefineConstants>
+    </PropertyGroup>
     <ItemGroup>
       <ProjectReference Include="..\data\data.csproj" />
-      <ProjectReference Include="..\security\security.csproj" />
       <ProjectReference Include="..\services\services.csproj" />
     </ItemGroup>
 

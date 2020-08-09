@@ -1,6 +1,7 @@
-using System;
 using System.Text;
 using Comments.App.GraphQL.Security;
+using Comments.App.Utils;
+using Comments.Core;
 using Comments.Data;
 using Comments.Services.CommentsService;
 using HotChocolate.AspNetCore;
@@ -21,8 +22,8 @@ namespace Comments.App
   {
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
-    
-    public Startup(IWebHostEnvironment environment,IConfiguration configuration)
+
+    public Startup(IWebHostEnvironment environment, IConfiguration configuration)
     {
       _environment = environment;
       _configuration = configuration;
@@ -30,18 +31,19 @@ namespace Comments.App
 
     public void ConfigureServices(IServiceCollection services)
     {
+      var config = new Config(_configuration);
+      services.AddSingleton<IConfig>(config);
       services.AddCors();
       services.AddHttpContextAccessor();
       services.AddDbContext<CommentsDbContext>(options =>
       {
-        var databaseConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ??
-          _configuration.GetConnectionString("DefaultConnection");
+        var databaseConnectionString = config.GetDatabaseConnectionString();
 
         options.UseNpgsql(databaseConnectionString,
           builder => { builder.MigrationsAssembly("comments.data"); });
       });
       services.AddScoped<ICommentsService, CommentsServiceImpl>();
-      var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? _configuration["JwtSecret"];
+      var jwtSecret = config.GetJwtTokenSecret();
 
       var symmetricSecurityKeyValue = Encoding.UTF8.GetBytes(jwtSecret);
       services.AddAuthentication(x =>
@@ -67,7 +69,7 @@ namespace Comments.App
       {
         options.AddPolicy(Constants.AccountPolicyName,
           policy => policy.Requirements.Add(new AccountPolicyRequirement()));
-      }) ;
+      });
       services.AddScoped<IAuthorizationHandler, AccountPolicyAuthorizationHandler>();
       services.SetupGraphql();
     }
@@ -79,7 +81,7 @@ namespace Comments.App
       dbContext.Database.Migrate();
 
       app.UseWebSockets();
-      
+
       if (env.IsDevelopment())
       {
         app.UseDeveloperExceptionPage();

@@ -6,9 +6,11 @@ namespace Comments.Services.Models
 {
   public class NewCommentInput
   {
-    private string _resourceKey;
     private string _accountDisplayName;
-    
+
+    private string _message;
+    private string _resourceKey;
+
     public Guid AccountId { get; set; }
     public Guid? ParentId { get; set; }
 
@@ -23,8 +25,7 @@ namespace Comments.Services.Models
       get => _resourceKey;
       set => _resourceKey = value?.Trim();
     }
-    
-    private string _message;
+
     public string Message
     {
       get => _message;
@@ -39,7 +40,7 @@ namespace Comments.Services.Models
           .MaximumLength(1000)
           .Matches("^[a-zA-Z0-9/_-]*$")
           .WithMessage("Allowed only characters, numbers, '_', '-' and '/'.");
-        
+
         RuleFor(x => x.Message)
           .NotEmpty()
           .MinimumLength(1)
