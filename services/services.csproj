@@ -6,6 +6,8 @@
     <RootNamespace>Comments.Services</RootNamespace>
     <Company>Nomadzetetic</Company>
     <Product>Comments Microservice</Product>
+    <Configurations>Debug;Release;Test</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

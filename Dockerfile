@@ -13,4 +13,6 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
 
 WORKDIR /app
 COPY --from=build-env /app/dist .
-ENTRYPOINT ["dotnet", "comments.app.dll"]
+
+EXPOSE 3030
+CMD ["dotnet", "comments.app.dll"]

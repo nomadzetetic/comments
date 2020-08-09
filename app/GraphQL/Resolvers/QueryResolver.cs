@@ -27,7 +27,7 @@ namespace Comments.App.GraphQL.Resolvers
       return _commentsService.GetComments(input);
     }
 
-#if DEV
+#if TEST
     public string GetJwtToken(bool commentsAdministrator, string accountDisplayName, string accountId)
     {
       var tokenHandler = new JwtSecurityTokenHandler();
