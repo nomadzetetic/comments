@@ -1,7 +1,4 @@
-bin/
-obj/
 .idea/
 .vscode/
 postgres/
 .vs/
-dist/
