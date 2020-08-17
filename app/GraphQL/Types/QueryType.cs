@@ -15,7 +15,7 @@ namespace Comments.App.GraphQL.Types
         .Argument("input", x => x.Type<NonNullType<GetCommentsInputType>>())
         .Type<NonNullType<CommentsPagedResultType>>();
 
-#if DEV
+#if TEST
       descriptor
         .Field(x => x.GetJwtToken(default, default, default))
         .Argument("commentsAdministrator", x => x.Type<NonNullType<BooleanType>>())

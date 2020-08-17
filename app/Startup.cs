@@ -80,6 +80,11 @@ namespace Comments.App
       using var dbContext = serviceScope.ServiceProvider.GetService<CommentsDbContext>();
       dbContext.Database.Migrate();
 
+      app.UseCors(x => x
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+      );
       app.UseWebSockets();
 
       if (env.IsDevelopment())
@@ -92,14 +97,11 @@ namespace Comments.App
           EnableSubscription = true
         });
       }
-
-      app.UseHttpsRedirection();
-      app.UseCors(x => x
-        .AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-      );
-
+      else
+      {
+        app.UseHttpsRedirection();
+      }
+      
       app.UseAuthentication();
       app.UseGraphQL(new QueryMiddlewareOptions
       {
